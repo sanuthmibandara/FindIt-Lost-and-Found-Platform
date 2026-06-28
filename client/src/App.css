@@ -4,6 +4,11 @@
   padding: 2rem;
 }
 
+.main-content:has(.auth-page) {
+  max-width: none;
+  padding: 0;
+}
+
 .page {
   padding: 1rem 0;
 }
