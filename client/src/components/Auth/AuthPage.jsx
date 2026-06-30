@@ -81,7 +81,7 @@ function AuthPage({ initialMode = "login" }) {
     setLoading(true);
     try {
       await login(loginForm.email, loginForm.password);
-      navigate("/dashboard");
+      navigate("/");
     } catch (err) {
       setApiError(err.response?.data?.message || "Login failed. Try again.");
     } finally {

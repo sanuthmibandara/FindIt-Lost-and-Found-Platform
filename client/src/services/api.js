@@ -24,4 +24,28 @@ export const loginUser = (data) => api.post("/auth/login", data);
 export const forgotPassword = (data) => api.post("/auth/forgot-password", data);
 export const resetPassword = (data) => api.post("/auth/reset-password", data);
 
+export const createPost = (formData) =>
+  api.post("/posts", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    transformRequest: [(data, headers) => {
+      delete headers["Content-Type"];
+      return data;
+    }],
+  });
+
+export const getPosts = () => api.get("/posts");
+export const getMyPosts = () => api.get("/posts/my");
+export const getPostById = (id) => api.get(`/posts/${id}`);
+
+export const updatePost = (id, formData) =>
+  api.put(`/posts/${id}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    transformRequest: [(data, headers) => {
+      delete headers["Content-Type"];
+      return data;
+    }],
+  });
+
+export const deletePost = (id) => api.delete(`/posts/${id}`);
+
 export default api;

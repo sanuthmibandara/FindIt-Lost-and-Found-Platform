@@ -1,0 +1,120 @@
+.my-post-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  overflow: hidden;
+  transition: box-shadow 0.25s;
+}
+
+.my-post-card:hover {
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+}
+
+.my-post-image {
+  position: relative;
+  height: 180px;
+  background: #fafafa;
+}
+
+.my-post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.my-post-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.my-post-badge.lost {
+  background: #e53935;
+}
+
+.my-post-badge.found {
+  background: #43a047;
+}
+
+.my-post-status {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.92);
+  color: #666;
+}
+
+.my-post-body {
+  padding: 1rem 1.15rem 1.25rem;
+}
+
+.my-post-category {
+  font-size: 0.7rem;
+  color: #b8860b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.my-post-body h3 {
+  margin: 0.3rem 0 0.5rem;
+  font-size: 1rem;
+  color: #1a1a2e;
+  line-height: 1.35;
+}
+
+.my-post-location,
+.my-post-date {
+  margin: 0.15rem 0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.my-post-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.btn-edit,
+.btn-delete {
+  flex: 1;
+  padding: 0.55rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  border: none;
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #f5c518, #e6b800);
+  color: #fff;
+}
+
+.btn-edit:hover {
+  box-shadow: 0 4px 12px rgba(230, 184, 0, 0.35);
+}
+
+.btn-delete {
+  background: #fff;
+  color: #dc3545;
+  border: 1px solid #f5c5c5;
+}
+
+.btn-delete:hover {
+  background: #fde8ea;
+}

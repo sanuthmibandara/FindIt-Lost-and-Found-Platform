@@ -1,0 +1,106 @@
+.filter-sidebar {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #f0f0f0;
+  padding: 1.25rem;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.filter-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.filter-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1a1a2e;
+}
+
+.filter-reset {
+  background: none;
+  border: none;
+  color: #e6b800;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-reset:hover {
+  text-decoration: underline;
+}
+
+.filter-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.filter-section h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.filter-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.85rem;
+  color: #444;
+  cursor: pointer;
+}
+
+.filter-checkbox input {
+  accent-color: #f5c518;
+  width: 16px;
+  height: 16px;
+}
+
+.type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.type-dot.lost {
+  background: #e53935;
+}
+
+.type-dot.found {
+  background: #43a047;
+}
+
+.filter-categories {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.filter-categories::-webkit-scrollbar {
+  width: 4px;
+}
+
+.filter-categories::-webkit-scrollbar-thumb {
+  background: #ddd;
+  border-radius: 4px;
+}
+
+@media (max-width: 900px) {
+  .filter-sidebar {
+    position: static;
+  }
+}

@@ -1,10 +1,11 @@
 .main-content {
-  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
 }
 
-.main-content:has(.auth-page) {
+.main-content:has(.auth-page),
+.main-content:has(.create-post-page),
+.main-content:has(.my-posts-page) {
   max-width: none;
   padding: 0;
 }
