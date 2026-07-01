@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { getErrorMessage } from "../../utils/errorMessages";
 import {
   validateRegisterForm,
   validateLoginForm,
@@ -38,12 +40,11 @@ function AuthPage({ initialMode = "login" }) {
   const navigate = useNavigate();
   const { login, register, requestPasswordReset, completePasswordReset } =
     useAuth();
+  const { toast } = useToast();
 
   const [isRegister, setIsRegister] = useState(initialMode === "register");
   const [view, setView] = useState("auth"); // auth | forgot | reset
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
 
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [registerForm, setRegisterForm] = useState({
@@ -65,14 +66,8 @@ function AuthPage({ initialMode = "login" }) {
 
   const [devResetCode, setDevResetCode] = useState("");
 
-  const clearMessages = () => {
-    setApiError("");
-    setSuccessMsg("");
-  };
-
   const handleLogin = async (e) => {
     e.preventDefault();
-    clearMessages();
 
     const errors = validateLoginForm(loginForm);
     setLoginErrors(errors);
@@ -81,9 +76,10 @@ function AuthPage({ initialMode = "login" }) {
     setLoading(true);
     try {
       await login(loginForm.email, loginForm.password);
+      toast.success("Welcome back!");
       navigate("/");
     } catch (err) {
-      setApiError(err.response?.data?.message || "Login failed. Try again.");
+      toast.error(getErrorMessage(err, "Login failed. Please check your credentials."));
     } finally {
       setLoading(false);
     }
@@ -91,7 +87,6 @@ function AuthPage({ initialMode = "login" }) {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    clearMessages();
 
     const errors = validateRegisterForm(registerForm);
     setRegisterErrors(errors);
@@ -104,15 +99,13 @@ function AuthPage({ initialMode = "login" }) {
         registerForm.email,
         registerForm.password
       );
-      setSuccessMsg("Account created! Please sign in.");
+      toast.success("Account created! Please sign in.");
       setIsRegister(false);
       setLoginForm({ email: registerForm.email, password: "" });
       setRegisterForm({ name: "", email: "", password: "" });
       setRegisterErrors({});
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || "Registration failed. Try again."
-      );
+      toast.error(getErrorMessage(err, "Registration failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -120,7 +113,6 @@ function AuthPage({ initialMode = "login" }) {
 
   const handleForgot = async (e) => {
     e.preventDefault();
-    clearMessages();
 
     const errors = validateForgotForm(forgotForm);
     setForgotErrors(errors);
@@ -129,7 +121,7 @@ function AuthPage({ initialMode = "login" }) {
     setLoading(true);
     try {
       const data = await requestPasswordReset(forgotForm.email);
-      setSuccessMsg(data.message);
+      toast.info(data.message);
       if (data.resetToken) {
         setDevResetCode(data.resetToken);
         setResetForm((prev) => ({
@@ -140,9 +132,7 @@ function AuthPage({ initialMode = "login" }) {
       }
       setView("reset");
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || "Could not process request. Try again."
-      );
+      toast.error(getErrorMessage(err, "Could not process your request."));
     } finally {
       setLoading(false);
     }
@@ -150,7 +140,6 @@ function AuthPage({ initialMode = "login" }) {
 
   const handleReset = async (e) => {
     e.preventDefault();
-    clearMessages();
 
     const errors = validateResetForm(resetForm);
     setResetErrors(errors);
@@ -163,16 +152,14 @@ function AuthPage({ initialMode = "login" }) {
         resetForm.resetToken,
         resetForm.newPassword
       );
-      setSuccessMsg(data.message);
+      toast.success(data.message);
       setView("auth");
       setIsRegister(false);
       setLoginForm({ email: resetForm.email, password: "" });
       setResetForm({ email: "", resetToken: "", newPassword: "" });
       setDevResetCode("");
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || "Password reset failed. Try again."
-      );
+      toast.error(getErrorMessage(err, "Password reset failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -190,10 +177,6 @@ function AuthPage({ initialMode = "login" }) {
                   <p className="auth-subtitle">
                     Enter your email and we&apos;ll send you a reset code
                   </p>
-
-                  {apiError && (
-                    <div className="auth-alert error">{apiError}</div>
-                  )}
 
                   <form className="auth-form" onSubmit={handleForgot}>
                     <div className="auth-input-group">
@@ -225,13 +208,6 @@ function AuthPage({ initialMode = "login" }) {
                   <p className="auth-subtitle">
                     Enter the code and your new password
                   </p>
-
-                  {successMsg && (
-                    <div className="auth-alert success">{successMsg}</div>
-                  )}
-                  {apiError && (
-                    <div className="auth-alert error">{apiError}</div>
-                  )}
 
                   {devResetCode && (
                     <div className="reset-code-box">
@@ -320,7 +296,6 @@ function AuthPage({ initialMode = "login" }) {
                 className="back-link"
                 onClick={() => {
                   setView("auth");
-                  clearMessages();
                   setDevResetCode("");
                 }}
               >
@@ -340,13 +315,6 @@ function AuthPage({ initialMode = "login" }) {
         <div className="auth-form-container signup-container">
           <h1>Create Account</h1>
           <p className="auth-subtitle">or use your email for registration</p>
-
-          {apiError && isRegister && (
-            <div className="auth-alert error">{apiError}</div>
-          )}
-          {successMsg && !isRegister && (
-            <div className="auth-alert success">{successMsg}</div>
-          )}
 
           <form className="auth-form" onSubmit={handleRegister}>
             <div className="auth-input-group">
@@ -424,13 +392,6 @@ function AuthPage({ initialMode = "login" }) {
           <h1>Welcome Back!</h1>
           <p className="auth-subtitle">use your account to sign in</p>
 
-          {apiError && !isRegister && (
-            <div className="auth-alert error">{apiError}</div>
-          )}
-          {successMsg && !isRegister && (
-            <div className="auth-alert success">{successMsg}</div>
-          )}
-
           <form className="auth-form" onSubmit={handleLogin}>
             <div className="auth-input-group">
               <span className="auth-input-icon">
@@ -472,7 +433,6 @@ function AuthPage({ initialMode = "login" }) {
               type="button"
               className="forgot-link"
               onClick={() => {
-                clearMessages();
                 setForgotForm({ email: loginForm.email });
                 setView("forgot");
               }}
@@ -508,10 +468,7 @@ function AuthPage({ initialMode = "login" }) {
               <button
                 type="button"
                 className="ghost-btn"
-                onClick={() => {
-                  clearMessages();
-                  setIsRegister(false);
-                }}
+                onClick={() => setIsRegister(false)}
               >
                 LOGIN
               </button>
@@ -529,10 +486,7 @@ function AuthPage({ initialMode = "login" }) {
               <button
                 type="button"
                 className="ghost-btn"
-                onClick={() => {
-                  clearMessages();
-                  setIsRegister(true);
-                }}
+                onClick={() => setIsRegister(true)}
               >
                 REGISTER
               </button>

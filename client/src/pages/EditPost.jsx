@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getPostById, updatePost } from "../services/api";
+import { getErrorMessage } from "../utils/errorMessages";
+import { validateImageFiles } from "../utils/validateImage";
 import {
   POST_CATEGORIES,
   POST_TYPES,
@@ -15,6 +18,7 @@ function EditPost() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -30,7 +34,6 @@ function EditPost() {
   const [images, setImages] = useState([]);
   const [activeImage, setActiveImage] = useState(0);
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
 
@@ -47,6 +50,7 @@ function EditPost() {
 
         const ownerId = post.owner?._id || post.owner?.id || post.owner;
         if (ownerId?.toString() !== user?.id?.toString()) {
+          toast.error("You can only edit your own posts.");
           navigate("/my-posts");
           return;
         }
@@ -71,8 +75,9 @@ function EditPost() {
             isExisting: true,
           }))
         );
-      } catch {
-        setApiError("Failed to load post.");
+      } catch (err) {
+        toast.error(getErrorMessage(err, "Failed to load post."));
+        navigate("/my-posts");
       } finally {
         setFetching(false);
       }
@@ -85,7 +90,6 @@ function EditPost() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-    setApiError("");
   };
 
   const handleTypeChange = (type) => {
@@ -97,7 +101,20 @@ function EditPost() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
+    const imageCheck = validateImageFiles(files);
+    if (!imageCheck.valid) {
+      toast.error(imageCheck.message);
+      e.target.value = "";
+      return;
+    }
+
     const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.warning(`You can upload up to ${MAX_IMAGES} images per post.`);
+      e.target.value = "";
+      return;
+    }
+
     const toAdd = files.slice(0, remaining);
 
     const newImages = toAdd.map((file) => ({
@@ -133,7 +150,6 @@ function EditPost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError("");
     if (!validate()) return;
 
     const formData = new FormData();
@@ -160,11 +176,10 @@ function EditPost() {
     setLoading(true);
     try {
       await updatePost(id, formData);
+      toast.success("Post updated successfully!");
       navigate("/my-posts");
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || "Failed to update post. Try again."
-      );
+      toast.error(getErrorMessage(err, "Failed to update post. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -201,8 +216,6 @@ function EditPost() {
         </div>
 
         <form className="create-post-form" onSubmit={handleSubmit}>
-          {apiError && <div className="form-alert error">{apiError}</div>}
-
           <div className="create-post-grid">
             <div className="form-section">
               <div className="form-group">

@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getPosts } from "../services/api";
+import { getErrorMessage } from "../utils/errorMessages";
 import { POST_CATEGORIES } from "../utils/categories";
 import PostCard from "../components/home/PostCard";
 import FilterSidebar from "../components/home/FilterSidebar";
@@ -29,12 +31,13 @@ const categoryIcons = {
 
 function Home() {
   const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
+  const lastSearchToast = useRef("");
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [filters, setFilters] = useState(defaultFilters);
   const [activeCategory, setActiveCategory] = useState("All");
   const [sortBy, setSortBy] = useState("newest");
@@ -43,17 +46,17 @@ function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
-      setError("");
       try {
         const res = await getPosts();
         setPosts(res.data.posts || []);
-      } catch {
-        setError("Failed to load posts. Please try again.");
+      } catch (err) {
+        toast.error(getErrorMessage(err, "Could not load posts. Please refresh the page."));
       } finally {
         setLoading(false);
       }
     };
     fetchPosts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredPosts = useMemo(() => {
@@ -98,6 +101,17 @@ function Home() {
 
     return result;
   }, [posts, searchQuery, filters, activeCategory, sortBy]);
+
+  useEffect(() => {
+    if (loading || !searchQuery) return;
+    if (filteredPosts.length === 0 && lastSearchToast.current !== searchQuery) {
+      lastSearchToast.current = searchQuery;
+      toast.info(`No results found for "${searchQuery}". Try different keywords.`);
+    }
+    if (filteredPosts.length > 0) {
+      lastSearchToast.current = "";
+    }
+  }, [searchQuery, filteredPosts.length, loading, toast]);
 
   const activeFilterTags = [
     ...filters.types,
@@ -202,10 +216,9 @@ function Home() {
               </div>
             </div>
 
-            {loading && <div className="feed-status">Loading posts...</div>}
-            {error && <div className="feed-status error">{error}</div>}
+        {loading && <div className="feed-status">Loading posts...</div>}
 
-            {!loading && !error && filteredPosts.length === 0 && (
+        {!loading && filteredPosts.length === 0 && (
               <div className="feed-empty">
                 <span>🔍</span>
                 <h3>No items found</h3>

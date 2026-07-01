@@ -1,28 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { deletePost, getMyPosts } from "../services/api";
+import { getErrorMessage } from "../utils/errorMessages";
 import MyPostCard from "../components/home/MyPostCard";
 import "./MyPosts.css";
 
 function MyPosts() {
-  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   const fetchPosts = async () => {
     setLoading(true);
-    setError("");
     try {
       const res = await getMyPosts();
       setPosts(res.data.posts || []);
-    } catch {
-      setError("Failed to load your posts.");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Could not load your posts."));
     } finally {
       setLoading(false);
     }
@@ -43,8 +44,9 @@ function MyPosts() {
       await deletePost(deleteTarget._id);
       setPosts((prev) => prev.filter((p) => p._id !== deleteTarget._id));
       setDeleteTarget(null);
-    } catch {
-      setError("Failed to delete post. Try again.");
+      toast.success("Post deleted successfully.");
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Failed to delete post. Please try again."));
       setDeleteTarget(null);
     } finally {
       setDeleting(false);
@@ -67,9 +69,8 @@ function MyPosts() {
         </div>
 
         {loading && <div className="my-posts-status">Loading your posts...</div>}
-        {error && <div className="my-posts-status error">{error}</div>}
 
-        {!loading && !error && posts.length === 0 && (
+        {!loading && posts.length === 0 && (
           <div className="my-posts-empty">
             <span>📭</span>
             <h3>No posts yet</h3>

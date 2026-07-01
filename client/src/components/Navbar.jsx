@@ -1,18 +1,28 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { validateSearchQuery } from "../utils/validateSearch";
 import ProfileMenu from "./profile/ProfileMenu";
 import "./Navbar.css";
 
 function Navbar() {
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search") || "";
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const value = e.target.search.value.trim();
+    const value = e.target.search.value;
+    const result = validateSearchQuery(value);
+
+    if (!result.valid) {
+      toast.warning(result.message);
+      return;
+    }
+
     const params = new URLSearchParams(searchParams);
-    if (value) params.set("search", value);
+    if (result.query) params.set("search", result.query);
     else params.delete("search");
     setSearchParams(params);
   };

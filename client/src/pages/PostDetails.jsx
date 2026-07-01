@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { getPostById } from "../services/api";
+import { getErrorMessage } from "../utils/errorMessages";
 import "./PostDetails.css";
 
 const PLACEHOLDER =
@@ -20,45 +22,48 @@ function PostDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [claimMsg, setClaimMsg] = useState("");
 
   useEffect(() => {
     const fetchPost = async () => {
       setLoading(true);
-      setError("");
+      setNotFound(false);
       try {
         const res = await getPostById(id);
         setPost(res.data);
-      } catch {
-        setError("Post not found or failed to load.");
+      } catch (err) {
+        setNotFound(true);
+        toast.error(getErrorMessage(err, "This post could not be found."));
       } finally {
         setLoading(false);
       }
     };
     fetchPost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleClaim = () => {
     if (!isAuthenticated) {
+      toast.info("Please log in to submit a claim.");
       navigate("/login");
       return;
     }
-    setClaimMsg("Claim requests will be available in the next phase.");
+    toast.info("Claim requests will be available in the next phase.");
   };
 
   if (loading) {
     return <div className="details-page"><div className="details-status">Loading...</div></div>;
   }
 
-  if (error || !post) {
+  if (notFound || !post) {
     return (
       <div className="details-page">
-        <div className="details-status error">{error || "Post not found"}</div>
+        <div className="details-status">Post not found</div>
         <Link to="/" className="back-link">← Back to Browse</Link>
       </div>
     );
@@ -127,8 +132,6 @@ function PostDetails() {
                 </div>
               )}
             </div>
-
-            {claimMsg && <div className="claim-msg">{claimMsg}</div>}
 
             <button
               type="button"

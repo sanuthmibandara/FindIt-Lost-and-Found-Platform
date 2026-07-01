@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import { createPost } from "../services/api";
+import { getErrorMessage } from "../utils/errorMessages";
+import { validateImageFiles } from "../utils/validateImage";
 import { POST_CATEGORIES, POST_TYPES } from "../utils/categories";
 import "./CreatePost.css";
 
@@ -20,13 +23,13 @@ const initialForm = {
 function CreatePost() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState(initialForm);
   const [images, setImages] = useState([]);
   const [activeImage, setActiveImage] = useState(0);
   const [errors, setErrors] = useState({});
-  const [apiError, setApiError] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,7 +42,6 @@ function CreatePost() {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
-    setApiError("");
   };
 
   const handleTypeChange = (type) => {
@@ -51,8 +53,24 @@ function CreatePost() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
+    const imageCheck = validateImageFiles(files);
+    if (!imageCheck.valid) {
+      toast.error(imageCheck.message);
+      e.target.value = "";
+      return;
+    }
+
     const remaining = MAX_IMAGES - images.length;
+    if (remaining <= 0) {
+      toast.warning(`You can upload up to ${MAX_IMAGES} images per post.`);
+      e.target.value = "";
+      return;
+    }
+
     const toAdd = files.slice(0, remaining);
+    if (files.length > remaining) {
+      toast.info(`Only ${remaining} more image(s) were added (max ${MAX_IMAGES}).`);
+    }
 
     const newImages = toAdd.map((file) => ({
       file,
@@ -90,7 +108,6 @@ function CreatePost() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setApiError("");
 
     if (!validate()) return;
 
@@ -112,11 +129,10 @@ function CreatePost() {
     setLoading(true);
     try {
       await createPost(formData);
+      toast.success("Post published successfully!");
       navigate("/");
     } catch (err) {
-      setApiError(
-        err.response?.data?.message || "Failed to create post. Try again."
-      );
+      toast.error(getErrorMessage(err, "Failed to create post. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -143,8 +159,6 @@ function CreatePost() {
         </div>
 
         <form className="create-post-form" onSubmit={handleSubmit}>
-          {apiError && <div className="form-alert error">{apiError}</div>}
-
           <div className="create-post-grid">
             {/* Left column */}
             <div className="form-section">
