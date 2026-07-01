@@ -1,8 +1,10 @@
 import Post from "../models/Post.js";
+import Claim from "../models/Claim.js";
 import {
   uploadImagesToCloudinary,
   parseImageUrlsFromBody,
 } from "../utils/cloudinaryUpload.js";
+import { buildPostTimeline } from "../controllers/claimController.js";
 
 // POST /api/posts — logged-in users only
 export const createPost = async (req, res) => {
@@ -10,6 +12,30 @@ export const createPost = async (req, res) => {
     const uploadedUrls = await uploadImagesToCloudinary(req.files);
     const bodyImageUrls = parseImageUrlsFromBody(req.body.images);
     const images = [...bodyImageUrls, ...uploadedUrls];
+
+    let linkedLostPost = null;
+
+    if (req.body.linkedLostPost) {
+      if (req.body.type !== "Found") {
+        return res.status(400).json({
+          message: "Only Found posts can be linked to a Lost post",
+        });
+      }
+
+      const lostPost = await Post.findById(req.body.linkedLostPost);
+
+      if (!lostPost) {
+        return res.status(400).json({ message: "Linked lost post not found" });
+      }
+
+      if (lostPost.type !== "Lost") {
+        return res.status(400).json({
+          message: "Can only link to a Lost post",
+        });
+      }
+
+      linkedLostPost = lostPost._id;
+    }
 
     const post = await Post.create({
       title: req.body.title.trim(),
@@ -22,9 +48,13 @@ export const createPost = async (req, res) => {
       status: req.body.status || "Open",
       images,
       owner: req.user.id,
+      linkedLostPost,
     });
 
-    const populatedPost = await post.populate("owner", "name email");
+    const populatedPost = await post.populate([
+      { path: "owner", select: "name email" },
+      { path: "linkedLostPost", select: "title type" },
+    ]);
 
     res.status(201).json({
       message: "Post created successfully",
@@ -67,19 +97,35 @@ export const getPosts = async (req, res) => {
   }
 };
 
-// GET /api/posts/:id — public
+// GET /api/posts/:id — public (optional auth enriches response)
 export const getPostById = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate(
-      "owner",
-      "name email"
-    );
+    const post = await Post.findById(req.params.id)
+      .populate("owner", "name email")
+      .populate("linkedLostPost", "title type status");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
 
-    res.json(post);
+    const timeline = await buildPostTimeline(post);
+
+    const response = {
+      ...post.toObject(),
+      timeline,
+    };
+
+    if (req.user) {
+      const userClaim = await Claim.findOne({
+        post: post._id,
+        claimer: req.user.id,
+      }).sort({ createdAt: -1 });
+
+      response.userClaim = userClaim;
+      response.isOwner = post.owner._id.toString() === req.user.id;
+    }
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -89,6 +135,10 @@ export const getPostById = async (req, res) => {
 export const updatePost = async (req, res) => {
   try {
     const post = req.post;
+
+    if (post.status === "Returned") {
+      return res.status(400).json({ message: "Cannot edit a returned item" });
+    }
 
     const keptUrls = parseImageUrlsFromBody(req.body.existingImages);
     const uploadedUrls = await uploadImagesToCloudinary(req.files);
@@ -129,7 +179,16 @@ export const updatePost = async (req, res) => {
 // DELETE /api/posts/:id — owner only
 export const deletePost = async (req, res) => {
   try {
+    const post = req.post;
+
+    if (post.status === "Returned") {
+      return res.status(400).json({
+        message: "Cannot delete a returned item. History is preserved.",
+      });
+    }
+
     await Post.findByIdAndDelete(req.params.id);
+    await Claim.deleteMany({ post: req.params.id });
 
     res.json({ message: "Post deleted successfully" });
   } catch (error) {

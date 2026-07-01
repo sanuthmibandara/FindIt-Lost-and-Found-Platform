@@ -9,6 +9,8 @@ import CreatePost from "./pages/CreatePost";
 import MyPosts from "./pages/MyPosts";
 import EditPost from "./pages/EditPost";
 import PostDetails from "./pages/PostDetails";
+import MyClaims from "./pages/MyClaims";
+import ReceivedClaims from "./pages/ReceivedClaims";
 import "./App.css";
 
 function App() {
@@ -25,6 +27,8 @@ function App() {
               <Route path="/dashboard" element={<Navigate to="/" replace />} />
               <Route path="/create-post" element={<CreatePost />} />
               <Route path="/my-posts" element={<MyPosts />} />
+              <Route path="/my-claims" element={<MyClaims />} />
+              <Route path="/received-claims" element={<ReceivedClaims />} />
               <Route path="/edit-post/:id" element={<EditPost />} />
               <Route path="/posts/:id" element={<PostDetails />} />
             </Routes>

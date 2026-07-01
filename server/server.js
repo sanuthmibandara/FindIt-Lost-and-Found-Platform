@@ -4,6 +4,7 @@ import cors from "cors";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import postRoutes from "./routes/postRoutes.js";
+import claimRoutes from "./routes/claimRoutes.js";
 import { isCloudinaryConfigured } from "./config/cloudinary.js";
 
 connectDB();
@@ -19,6 +20,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/claims", claimRoutes);
 
 const PORT = process.env.PORT || 5000;
 

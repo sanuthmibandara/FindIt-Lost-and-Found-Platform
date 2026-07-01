@@ -1,0 +1,149 @@
+.claim-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  padding: 1rem;
+}
+
+.claim-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+  animation: claimModalIn 0.25s ease;
+}
+
+@keyframes claimModalIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.claim-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.5rem 1.5rem 0;
+}
+
+.claim-modal-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  color: #1a1a2e;
+}
+
+.claim-modal-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.claim-modal-close {
+  background: #f5f5f5;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+
+.claim-modal form {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.claim-field {
+  margin-bottom: 1rem;
+}
+
+.claim-field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.4rem;
+}
+
+.claim-field .required {
+  color: #e6b800;
+}
+
+.claim-field input,
+.claim-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+}
+
+.claim-field input:focus,
+.claim-field textarea:focus {
+  border-color: #f5c518;
+  box-shadow: 0 0 0 3px rgba(245, 197, 24, 0.15);
+}
+
+.claim-field input.input-error,
+.claim-field textarea.input-error {
+  border-color: #dc3545;
+}
+
+.claim-field .field-error {
+  display: block;
+  font-size: 0.75rem;
+  color: #dc3545;
+  margin-top: 0.25rem;
+}
+
+.claim-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.25rem;
+}
+
+.claim-modal-actions .btn-cancel {
+  padding: 0.65rem 1.25rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  background: #fff;
+  color: #666;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.claim-modal-actions .btn-submit {
+  padding: 0.65rem 1.5rem;
+  border: none;
+  border-radius: 25px;
+  background: linear-gradient(135deg, #f5c518, #e6b800);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.claim-modal-actions .btn-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}

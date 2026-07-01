@@ -1,5 +1,6 @@
 import express from "express";
 import { protect } from "../middleware/authMiddleware.js";
+import { optionalProtect } from "../middleware/optionalAuth.js";
 import { authorizeOwner } from "../middleware/postMiddleware.js";
 import {
   uploadPostImages,
@@ -25,7 +26,7 @@ router.get("/", getPosts);
 
 // Protected — must be before /:id
 router.get("/my", protect, getMyPosts);
-router.get("/:id", getPostById);
+router.get("/:id", optionalProtect, getPostById);
 
 // Protected routes
 router.post(

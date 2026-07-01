@@ -5,7 +5,8 @@
 
 .main-content:has(.auth-page),
 .main-content:has(.create-post-page),
-.main-content:has(.my-posts-page) {
+.main-content:has(.my-posts-page),
+.main-content:has(.claims-page) {
   max-width: none;
   padding: 0;
 }

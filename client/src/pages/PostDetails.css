@@ -199,6 +199,67 @@
   cursor: not-allowed;
 }
 
+.claim-btn-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+  line-height: 1.2;
+}
+
+.claim-status-box {
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  margin-bottom: 0.5rem;
+}
+
+.claim-status-box.pending {
+  background: #fff8e1;
+  border: 1px solid #f5e6a3;
+  color: #8a6d00;
+}
+
+.claim-status-box.pending a {
+  display: block;
+  margin-top: 0.35rem;
+  color: #b8860b;
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.claim-status-box.approved {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  color: #2e7d32;
+  text-align: center;
+}
+
+.claim-hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.82rem;
+  color: #888;
+}
+
+.claim-hint.rejected {
+  color: #c62828;
+}
+
+.linked-lost-notice {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.linked-lost-notice a {
+  color: #b8860b;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.linked-lost-notice a:hover {
+  text-decoration: underline;
+}
+
 .details-status {
   text-align: center;
   padding: 4rem;

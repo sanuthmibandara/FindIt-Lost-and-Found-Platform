@@ -68,6 +68,12 @@ function EditPost() {
           status: post.status || "Open",
         });
 
+        if (post.status === "Returned") {
+          toast.info("This item has been returned and cannot be edited.");
+          navigate("/my-posts");
+          return;
+        }
+
         setImages(
           (post.images || []).map((url) => ({
             url,

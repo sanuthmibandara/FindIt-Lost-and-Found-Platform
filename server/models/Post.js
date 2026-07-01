@@ -64,6 +64,11 @@ const postSchema = new mongoose.Schema(
       ref: "User",
       required: [true, "Owner is required"],
     },
+    linkedLostPost: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      default: null,
+    },
   },
   {
     timestamps: true, // adds createdAt and updatedAt

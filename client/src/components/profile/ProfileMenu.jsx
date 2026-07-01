@@ -66,6 +66,12 @@ function ProfileMenu() {
           <Link to="/my-posts" onClick={() => setOpen(false)}>
             My Posts
           </Link>
+          <Link to="/my-claims" onClick={() => setOpen(false)}>
+            My Claims
+          </Link>
+          <Link to="/received-claims" onClick={() => setOpen(false)}>
+            Received Claims
+          </Link>
           <Link to="/create-post" onClick={() => setOpen(false)}>
             Create Post
           </Link>

@@ -48,4 +48,12 @@ export const updatePost = (id, formData) =>
 
 export const deletePost = (id) => api.delete(`/posts/${id}`);
 
+export const createClaim = (data) => api.post("/claims", data);
+export const getMyClaims = () => api.get("/claims/my");
+export const getReceivedClaims = () => api.get("/claims/received");
+export const getClaimForPost = (postId) => api.get(`/claims/post/${postId}`);
+export const approveClaim = (id) => api.patch(`/claims/${id}/approve`);
+export const rejectClaim = (id) => api.patch(`/claims/${id}/reject`);
+export const cancelClaim = (id) => api.delete(`/claims/${id}`);
+
 export default api;

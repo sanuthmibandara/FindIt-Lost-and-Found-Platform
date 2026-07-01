@@ -14,6 +14,7 @@ function formatDate(dateStr) {
 
 function MyPostCard({ post, onDelete }) {
   const image = post.images?.[0] || PLACEHOLDER;
+  const isReturned = post.status === "Returned";
 
   return (
     <article className="my-post-card">
@@ -28,16 +29,22 @@ function MyPostCard({ post, onDelete }) {
       <div className="my-post-body">
         <span className="my-post-category">{post.category}</span>
         <h3>{post.title}</h3>
-        <p className="my-post-location">📍 {post.location}</p>
+        <p className="my-post-location">{post.location}</p>
         <p className="my-post-date">{formatDate(post.dateLostOrFound)}</p>
 
         <div className="my-post-actions">
-          <Link to={`/edit-post/${post._id}`} className="btn-edit">
-            Edit
-          </Link>
-          <button type="button" className="btn-delete" onClick={() => onDelete(post)}>
-            Delete
-          </button>
+          {isReturned ? (
+            <span className="returned-note">Item returned — locked for history</span>
+          ) : (
+            <>
+              <Link to={`/edit-post/${post._id}`} className="btn-edit">
+                Edit
+              </Link>
+              <button type="button" className="btn-delete" onClick={() => onDelete(post)}>
+                Delete
+              </button>
+            </>
+          )}
         </div>
       </div>
     </article>

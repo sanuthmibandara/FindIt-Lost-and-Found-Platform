@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { createPost } from "../services/api";
+import { createPost, getPostById } from "../services/api";
 import { getErrorMessage } from "../utils/errorMessages";
 import { validateImageFiles } from "../utils/validateImage";
 import { POST_CATEGORIES, POST_TYPES } from "../utils/categories";
@@ -22,6 +22,8 @@ const initialForm = {
 
 function CreatePost() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromLostId = searchParams.get("fromLost");
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const fileInputRef = useRef(null);
@@ -31,12 +33,53 @@ function CreatePost() {
   const [activeImage, setActiveImage] = useState(0);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [linkedLostPostId, setLinkedLostPostId] = useState(null);
+  const [linkedLostTitle, setLinkedLostTitle] = useState("");
+  const [prefillLoading, setPrefillLoading] = useState(!!fromLostId);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!fromLostId || !isAuthenticated) return;
+
+    const loadLostPost = async () => {
+      setPrefillLoading(true);
+      try {
+        const res = await getPostById(fromLostId);
+        const lostPost = res.data;
+
+        if (lostPost.type !== "Lost") {
+          toast.error("Only Lost posts can be linked when reporting a found item.");
+          navigate("/");
+          return;
+        }
+
+        setLinkedLostPostId(lostPost._id);
+        setLinkedLostTitle(lostPost.title);
+        setForm({
+          title: lostPost.title || "",
+          description: lostPost.description || "",
+          type: "Found",
+          category: lostPost.category || "",
+          location: lostPost.location || "",
+          dateLostOrFound: "",
+          reward: lostPost.reward?.replace(/^LKR\s*/i, "") || "",
+        });
+      } catch (err) {
+        toast.error(getErrorMessage(err, "Could not load the lost post."));
+        navigate("/");
+      } finally {
+        setPrefillLoading(false);
+      }
+    };
+
+    loadLostPost();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromLostId, isAuthenticated]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,6 +88,7 @@ function CreatePost() {
   };
 
   const handleTypeChange = (type) => {
+    if (linkedLostPostId) return;
     setForm((prev) => ({ ...prev, type }));
     setErrors((prev) => ({ ...prev, type: "" }));
   };
@@ -122,6 +166,10 @@ function CreatePost() {
       formData.append("reward", `LKR ${form.reward.trim()}`);
     }
 
+    if (linkedLostPostId) {
+      formData.append("linkedLostPost", linkedLostPostId);
+    }
+
     images.forEach((img) => {
       formData.append("images", img.file);
     });
@@ -138,15 +186,25 @@ function CreatePost() {
     }
   };
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated || prefillLoading) {
+    return (
+      <div className="create-post-page">
+        <div className="create-post-status">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="create-post-page">
       <div className="create-post-card">
         <div className="create-post-header">
           <div>
-            <h1>Create New Post</h1>
-            <p>Report a lost or found item for the university community</p>
+            <h1>{linkedLostPostId ? "Report Found Item" : "Create New Post"}</h1>
+            <p>
+              {linkedLostPostId
+                ? `You found an item that may match: ${linkedLostTitle}`
+                : "Report a lost or found item for the university community"}
+            </p>
           </div>
           <button
             type="button"
@@ -159,6 +217,13 @@ function CreatePost() {
         </div>
 
         <form className="create-post-form" onSubmit={handleSubmit}>
+          {linkedLostPostId && (
+            <div className="linked-lost-banner">
+              This Found post will be linked to the original Lost report. Complete
+              the remaining details before publishing.
+            </div>
+          )}
+
           <div className="create-post-grid">
             {/* Left column */}
             <div className="form-section">
@@ -277,6 +342,7 @@ function CreatePost() {
                         name="type"
                         checked={form.type === type}
                         onChange={() => handleTypeChange(type)}
+                        disabled={!!linkedLostPostId}
                       />
                       <label htmlFor={`type-${type}`}>{type}</label>
                     </div>
